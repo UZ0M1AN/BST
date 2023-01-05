@@ -47,9 +47,29 @@ class Tree {
             this.prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
           }
     }
+
+    insert (value) {
+        let node = this.root;
+
+        while (node) {
+            if (node.data == value) return;
+
+            if (node.data < value) {
+                if (!node.right) node.right = new Node(value);
+                node = node.right;
+            }
+            if (node.data > value) {
+                if (!node.left) node.left = new Node(value);
+                node = node.left;
+            }
+        }  
+    }
+
+    delete (value) {}
 }
 
 const tree = new Tree([1, 2, 3, 4, 5]);
+tree.insert(10);
 log(tree.root);
 
 tree.prettyPrint();
