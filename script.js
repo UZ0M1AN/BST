@@ -68,66 +68,68 @@ class Tree {
     delete (value, node = this.root) {
         const delNode = this.find(value);
         
-        // if (node.data === delNode.data) this.root = null;
-        if (!delNode.right && !delNode.left) this._deleteLeaf(value, node);
-        if ((!delNode.right && delNode.left) || (delNode.right && !delNode.left)) this._deleteOneBranch(value, node)
-        if (delNode.right && delNode.left) this._deleteBothBranches(value, node);
+        if (!delNode.right && !delNode.left) this._deleteLeafNode(value, node);
+        if ((!delNode.right && delNode.left) || (delNode.right && !delNode.left)) this._deleteOneBranchNode(value, node)
+        if (delNode.right && delNode.left) this._deleteTwoBranchNode(value, node);
 
-        return delNode.data;
+        return value;
     }
 
-    _deleteLeaf (value, node) {
+    _deleteLeafNode (value, node) {
         if (!node) return;
 
         if (node.data > value) {
-            const leftNode = this._deleteLeaf(value, node.left);
+            const leftNode = this._deleteLeafNode(value, node.left);
             if (leftNode === null) node.left = null;
         }
         if (node.data < value) {
-            const rightNode = this._deleteLeaf(value, node.right);
+            const rightNode = this._deleteLeafNode(value, node.right);
             if (rightNode === null) node.right = null;
         }
         if (node.data == value) return null;
     }
 
-    _deleteOneBranch(value, node) {
+    _deleteOneBranchNode (value, node) {
         if (!node) return;
 
         if (node.data > value) {
-            const leftNode = this._deleteOneBranch(value, node.left);
+            const leftNode = this._deleteOneBranchNode(value, node.left);
             node.left = leftNode.left || leftNode.right;
         }
         if (node.data < value) {
-            const rightNode = this._deleteOneBranch(value, node.right);
+            const rightNode = this._deleteOneBranchNode(value, node.right);
             node.right = rightNode.left || rightNode.right;
         }
         if (node.data === value) return node;
     }
 
-    _deleteBothBranches(value, node) {
-        // if (!node) return;
+    _deleteTwoBranchNode (value, node) {
+        if (!node) return;
 
-        // if (node.data > value) {
-        //     const leftNode = this._deleteBothBranches(value, node.left);
-        //     node.left = leftNode;
-        // }
-        // if (node.data < value) {
-        //     const rightNode = this._deleteBothBranches(value, node.right);
-        //     node.right = rightNode;
-            
-        // }
-        // if (node.data === value) {
-        //     let nextBigNode = node.right,
-        //         lastLeftNode;
+        if (node.data > value) {
+            const leftNode = this._deleteTwoBranchNode(value, node.left);
+            node.left = leftNode;
+        }
+        if (node.data < value) {
+            const rightNode = this._deleteTwoBranchNode(value, node.right);
+            node.right = rightNode;
+        }
+        if (node.data === value) {
+            // Find the next biggest node
+            let nextBigNode = node.right,
+                lastLeftNode;
 
-        //     while (nextBigNode) {
-        //         if (!nextBigNode.left) lastLeftNode = nextBigNode;
-        //         nextBigNode = nextBigNode.left;
-        //     }
+            while (nextBigNode) {
+                if (!nextBigNode.left) lastLeftNode = nextBigNode;
+                nextBigNode = nextBigNode.left;
+            }
 
-        //     [lastLeftNode.right, lastLeftNode.left] = [node.right, node.left];
-        //     return lastLeftNode;
-        // }
+            // Replace the node to be deleted with the next biggest node
+            const data = lastLeftNode.data;
+            lastLeftNode.right ? this._deleteOneBranchNode(data, node) : this._deleteLeafNode(data, node);
+            node.data = data;
+        }
+        return node;
     }
 
     find (value, node = this.root) {
@@ -139,12 +141,59 @@ class Tree {
 
         return leftNode || rightNode || null;
     }
+
+    levelOrder (fxn) {
+        const arr = [this.root];
+        let i = 0;
+        
+        while (arr[i]) {
+            if (arr[i].left) arr.push(arr[i].left);
+            if (arr[i].right) arr.push(arr[i].right);
+            i++;
+        }
+        
+        const dataArr = arr.map(x => x.data);
+        const modArr = dataArr.map(fxn || (x => x));
+        return modArr;
+    }
+
+    preOrder (fxn, node = this.root, arr = []) {
+        if (!node) return;
+
+        arr.push(fxn ? fxn(node.data) : node.data);
+        const left = this.preOrder(fxn, node.left, arr);
+        const right = this.preOrder(fxn, node.right, arr);
+
+        return arr;
+    }
+
+    inOrder (fxn, node = this.root, arr = []) {
+        if (!node) return;
+
+        const left = this.inOrder(fxn, node.left, arr);
+        arr.push(fxn ? fxn(node.data) : node.data);
+        const right = this.inOrder(fxn, node.right, arr);
+
+        return arr;
+    }
+
+    postOrder (fxn, node = this.root, arr = []) {
+        if (!node) return;
+
+        const left = this.postOrder(fxn, node.left, arr);
+        const right = this.postOrder(fxn, node.right, arr); 
+        arr.push(fxn ? fxn(node.data) : node.data);
+
+        return arr;
+    }
+
+    height (node) {}
 }
 
-// const tree = new Tree([1, 2, 3, 4, 5, 6, 7, 8]);
-const tree = new Tree([50, 30, 20, 40, 32, 34, 36, 70, 60, 80, 65, 75, 85]);
+const tree = new Tree([1, 2, 3, 4, 5, 6, 7, 8]);
+// const tree = new Tree([50, 30, 20, 40, 32, 34, 36, 70, 60, 80, 65, 75, 85, 90, 95, 100, 86, 87]);
 log(tree.root);
 tree.prettyPrint();
-// log(tree.delete(70));
-// tree.prettyPrint();
-// log(tree.root);
+// log(tree.preOrder());
+// log(tree.inOrder());
+// log(tree.postOrder());
