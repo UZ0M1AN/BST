@@ -1,7 +1,5 @@
 console.log('uzomian...');
 
-const log = (...a) => console.log(...a);
-
 class Node {
     constructor(data) {
         this.data = data;
@@ -187,13 +185,41 @@ class Tree {
         return arr;
     }
 
-    height (node) {}
-}
+    height (node) {
+        if (typeof node === 'number') node = this.find(node);
+        if (!node) return -1;
 
-const tree = new Tree([1, 2, 3, 4, 5, 6, 7, 8]);
-// const tree = new Tree([50, 30, 20, 40, 32, 34, 36, 70, 60, 80, 65, 75, 85, 90, 95, 100, 86, 87]);
-log(tree.root);
-tree.prettyPrint();
-// log(tree.preOrder());
-// log(tree.inOrder());
-// log(tree.postOrder());
+        const left = this.height(node.left);
+        const right = this.height(node.right);
+
+        return left > right ? left + 1 : right + 1;
+    }
+
+    depth (node, root = this.root) {
+        let n = 0;
+
+        while (root.data !== node) {
+            if (node > root.data) root = root.right;
+            else root = root.left;
+            n++;
+        }
+
+        return n;
+    }
+
+    isBalanced (node = this.root) {
+        if (!node) return 0;
+
+        const left = this.isBalanced(node.left);
+        const right = this.isBalanced(node.right);
+
+        if (left === false || right === false) return false;
+        return Math.abs(this.height(node.left) - this.height(node.right)) < 2;
+    }
+
+    rebalance() {
+        const arr = this.preOrder();
+        this.root = this._buildTree(arr);
+        return this.root;
+    }
+}
